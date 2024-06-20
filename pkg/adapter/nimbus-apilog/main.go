@@ -7,6 +7,7 @@ import (
 	"context"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -29,7 +30,6 @@ func main() {
 		<-termChan
 		logger.Info("Shutdown signal received, waiting for all workers to finish")
 		cancelFunc()
-		logger.Info("All workers finished, shutting down")
 	}()
 
 	// setup up eBPF handlers
@@ -39,13 +39,24 @@ func main() {
 
 	// Run eBPF Handler
 	// TODO: We need to pass the context to these handlers, and these handlers should watch
-	// for the close of done channel
+	// for the close of done channel. The below waitgroup is needed for this routine to know
+	// when the handlers are done
+	var wg *sync.WaitGroup
+	wg.Add(2)
 	go func() {
+		defer wg.Done()
 		bpf.Bh.Run()
 	}()
 
 	go func() {
+		defer wg.Done()
 		bpf.TCH.RunWatchRoutine()
+	}()
+
+	// closer
+	go func() {
+		wg.Wait()
+		logger.Info("All workers finished, shutting down")
 	}()
 
 	logger.Info("NetworkPolicy adapter started")

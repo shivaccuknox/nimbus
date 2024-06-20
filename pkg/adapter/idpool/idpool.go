@@ -16,6 +16,7 @@ const (
 	DisallowChRoot            = "disallowChRoot"
 	DisallowCapabilities      = "disallowCapabilities"
 	ExploitPFA                = "preventExecutionFromTempOrLogsFolders"
+	EnsureTLS                 = "ensureTLS"
 	ApiLogging                = "apiLogging"
 )
 
@@ -48,6 +49,11 @@ var k8tlsIds = []string{
 	EnsureTLS,
 }
 
+// apiLogIds are IDs supported by the apiLogger
+var apiLogIds = []string{
+	ApiLogging,
+}
+
 // IsIdSupportedBy determines whether a given ID is supported by a security engine.
 func IsIdSupportedBy(id, securityEngine string) bool {
 	switch strings.ToLower(securityEngine) {
@@ -59,6 +65,8 @@ func IsIdSupportedBy(id, securityEngine string) bool {
 		return in(id, KyvIds)
 	case "k8tls":
 		return in(id, k8tlsIds)
+	case "apiLogger":
+		return in(id, apiLogIds)
 	default:
 		return false
 	}
