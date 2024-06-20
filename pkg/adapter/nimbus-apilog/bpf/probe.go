@@ -1,14 +1,14 @@
 package bpf
 
 import (
-	"BeeCol/exporter"
-	"BeeCol/parser"
-	"BeeCol/types"
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"log"
+
+	"github.com/5GSEC/nimbus/pkg/adapter/nimbus-apilog/exporter"
+	"github.com/5GSEC/nimbus/pkg/adapter/nimbus-apilog/parser"
+	"github.com/5GSEC/nimbus/pkg/adapter/nimbus-apilog/types"
 
 	"github.com/cilium/ebpf"
 	"github.com/cilium/ebpf/perf"
@@ -97,7 +97,6 @@ func (Bh *BpfHandler) ifaceReadRoutine(eventMap *ebpf.Map) error {
 			// Process, show the results
 			packet := processEvent(event)
 			strProto := "Unknown"
-			strDirection := "Unknown"
 
 			switch packet.ProtoType {
 			case 1:
@@ -110,33 +109,17 @@ func (Bh *BpfHandler) ifaceReadRoutine(eventMap *ebpf.Map) error {
 				strProto = "Unknown"
 			}
 
-			switch packet.Direction {
-			case 1:
-				strDirection = "Ingress"
-			case 2:
-				strDirection = "Egress"
-			}
-
-			if packet.ProtoType == 2 {
-				fmt.Println("-------------------------")
-				fmt.Printf("[%s] %s:%d -> %s:%d (%s)\n", strProto, packet.SrcIP, packet.SrcPort, packet.DstIP, packet.DstPort, strDirection)
-				parser.ParseRLSProtocol31(packet.Payload)
-				parser.ParseRLSProtocol32(packet.Payload)
-			} else if packet.ProtoType == 3 {
-				fmt.Println("-------------------------")
-				fmt.Printf("[%s] %s:%d -> %s:%d (%s)\n", strProto, packet.SrcIP, packet.SrcPort, packet.DstIP, packet.DstPort, strDirection)
-				fmt.Printf("%s", packet.Payload)
-			} else if packet.ProtoType == 1 {
+			if strProto == "TCP" {
 				// parse HTTP request Header
 				httpRequest, err := parser.ParseHTTPRequest(packet)
 				if err == nil {
-					_ = exporter.HTTPEx.InsertHTTPLog(httpRequest)
+					exporter.ProcessHTTPEvent(httpRequest)
 				}
 
 				// parse HTTP response Header
 				httpResponse, err := parser.ParseHTTPResponse(packet)
 				if err == nil {
-					_ = exporter.HTTPEx.InsertHTTPLog(httpResponse)
+					exporter.ProcessHTTPEvent(httpResponse)
 				}
 			}
 		}()

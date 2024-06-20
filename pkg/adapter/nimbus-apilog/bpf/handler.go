@@ -1,7 +1,6 @@
 package bpf
 
 import (
-	"BeeCol/types"
 	"errors"
 	"fmt"
 	"log"
@@ -9,6 +8,8 @@ import (
 	"os/exec"
 	"strings"
 	"sync"
+
+	"github.com/5GSEC/nimbus/pkg/adapter/nimbus-apilog/types"
 )
 
 var TCH *TCHandler

@@ -1,9 +1,10 @@
 package bpf
 
 import (
-	"BeeCol/types"
 	"encoding/binary"
 	"net"
+
+	"github.com/5GSEC/nimbus/pkg/adapter/nimbus-apilog/types"
 )
 
 // processEvent Function

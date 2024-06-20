@@ -29,6 +29,8 @@ func main() {
 		signal.Notify(termChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 		<-termChan
 		logger.Info("Shutdown signal received, waiting for all workers to finish")
+		// Stop the routine that reads from the kernel
+		bpf.Bh.Stop()
 		cancelFunc()
 	}()
 
@@ -42,12 +44,7 @@ func main() {
 	// for the close of done channel. The below waitgroup is needed for this routine to know
 	// when the handlers are done
 	var wg *sync.WaitGroup
-	wg.Add(2)
-	go func() {
-		defer wg.Done()
-		bpf.Bh.Run()
-	}()
-
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		bpf.TCH.RunWatchRoutine()

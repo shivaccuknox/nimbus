@@ -16,6 +16,7 @@ import (
 	"github.com/5GSEC/nimbus/api/v1alpha1"
 	"github.com/5GSEC/nimbus/pkg/adapter/idpool"
 	"github.com/5GSEC/nimbus/pkg/adapter/k8s"
+	"github.com/5GSEC/nimbus/pkg/adapter/nimbus-apilog/bpf"
 	globalwatcher "github.com/5GSEC/nimbus/pkg/adapter/watcher"
 )
 
@@ -70,10 +71,10 @@ func reconcileLogging(ctx context.Context) {
 		}
 	}
 
-	// Actually setup the engine
+	// Apply to engine
 	if enableLogging {
-		return
+		bpf.Bh.Run()
 	} else {
-
+		bpf.Bh.Stop()
 	}
 }
