@@ -16,7 +16,7 @@ const (
 	DisallowChRoot            = "disallowChRoot"
 	DisallowCapabilities      = "disallowCapabilities"
 	ExploitPFA                = "preventExecutionFromTempOrLogsFolders"
-	EnsureTLS                 = "ensureTLS"
+	ApiLogging                = "apiLogging"
 )
 
 // KaIds are IDs supported by KubeArmor.
